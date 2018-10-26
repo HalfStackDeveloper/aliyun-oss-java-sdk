@@ -1227,4 +1227,50 @@ public class OSSBucketOperation extends OSSOperation {
         return doOperation(request, listUserRegionResponseParser, null, null, true);
     }
 
+    public void putVpcMapping(VpcMappingRequest putVpcMappingRequest) throws OSSException, ClientException {
+        assertParameterNotNull(putVpcMappingRequest, "putVpcMappingRequest");
+
+        String bucketName = putVpcMappingRequest.getBucketName();
+        assertParameterNotNull(bucketName, "bucketName");
+        ensureBucketNameValid(bucketName);
+
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(SUBRESOURCE_VPC_MAPPING, null);
+
+        byte[] rawContent = vpcMappingRequestMarshaller.marshall(putVpcMappingRequest);
+
+        Map<String, String> headers = new HashMap<String, String>();
+        addRequestRequiredHeaders(headers, rawContent);
+
+        RequestMessage request = new OSSRequestMessageBuilder(getInnerClient()).setEndpoint(getEndpoint())
+            .setMethod(HttpMethod.PUT).setBucket(bucketName).setParameters(params).setHeaders(headers)
+            .setInputSize(rawContent.length).setInputStream(new ByteArrayInputStream(rawContent))
+            .setOriginalRequest(putVpcMappingRequest).build();
+
+        doOperation(request, emptyResponseParser, bucketName, null, true);
+    }
+
+    public void deleteVpcMapping(VpcMappingRequest deleteVpcMappingRequest) throws OSSException, ClientException {
+        assertParameterNotNull(deleteVpcMappingRequest, "deleteVpcMappingRequest");
+
+        String bucketName = deleteVpcMappingRequest.getBucketName();
+        assertParameterNotNull(bucketName, "bucketName");
+        ensureBucketNameValid(bucketName);
+
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(SUBRESOURCE_VPC_MAPPING, null);
+
+        byte[] rawContent = vpcMappingRequestMarshaller.marshall(deleteVpcMappingRequest);
+
+        Map<String, String> headers = new HashMap<String, String>();
+        addRequestRequiredHeaders(headers, rawContent);
+
+        RequestMessage request = new OSSRequestMessageBuilder(getInnerClient()).setEndpoint(getEndpoint())
+            .setMethod(HttpMethod.DELETE).setBucket(bucketName).setParameters(params).setHeaders(headers)
+            .setInputSize(rawContent.length).setInputStream(new ByteArrayInputStream(rawContent))
+            .setOriginalRequest(deleteVpcMappingRequest).build();
+
+        doOperation(request, emptyResponseParser, bucketName, null, true);
+    }
+
 }

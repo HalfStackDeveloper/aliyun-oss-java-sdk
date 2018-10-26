@@ -78,6 +78,9 @@ public final class RequestMarshallers {
     public static final CreateSelectObjectMetadataRequestMarshaller createSelectObjectMetadataRequestMarshaller = new CreateSelectObjectMetadataRequestMarshaller();
     public static final SelectObjectRequestMarshaller selectObjectRequestMarshaller = new SelectObjectRequestMarshaller();
 
+    public static final VpcMappingRequestMarshaller vpcMappingRequestMarshaller = new VpcMappingRequestMarshaller();
+
+
     public interface RequestMarshaller<R> extends Marshaller<FixedLengthInputStream, R> {
 
     }
@@ -380,6 +383,14 @@ public final class RequestMarshallers {
                     if (redirect.getMirrorDstVpcId() != null) {
                         xmlBody.append("<MirrorDstVpcId>" + redirect.getMirrorDstVpcId()
                             + "</MirrorDstVpcId>");
+                    }
+                    if (redirect.isMirrorUsingRole() != null) {
+                        xmlBody.append("<MirrorUsingRole>" + redirect.isMirrorUsingRole()
+                            + "</MirrorUsingRole>");
+                    }
+                    if (redirect.getMirrorRole() != null) {
+                        xmlBody.append("<MirrorRole>" + redirect.getMirrorRole()
+                            + "</MirrorRole>");
                     }
                     if (redirect.getMirrorHeaders() != null) {
                         xmlBody.append("<MirrorHeaders>");
@@ -1013,6 +1024,31 @@ public final class RequestMarshallers {
             xmlBody.append("<ExtendWormConfiguration>");
             xmlBody.append("<RetentionPeriodInDays>" + request.getRetentionPeriodInDays() + "</RetentionPeriodInDays>");
             xmlBody.append("</ExtendWormConfiguration>");
+
+            byte[] rawData = null;
+            try {
+                rawData = xmlBody.toString().getBytes(DEFAULT_CHARSET_NAME);
+            } catch (UnsupportedEncodingException e) {
+                throw new ClientException("Unsupported encoding " + e.getMessage(), e);
+            }
+            return rawData;
+        }
+    }
+
+
+    public static final class VpcMappingRequestMarshaller
+        implements RequestMarshaller2<VpcMappingRequest> {
+
+        @Override
+        public byte[] marshall(VpcMappingRequest request) {
+            StringBuffer xmlBody = new StringBuffer();
+            xmlBody.append("<VpcMappingParams>");
+            xmlBody.append("<VpcId>").append(request.getVpcMapping().getVpcId()).append("</VpcId>");
+            xmlBody.append("<InstIp>").append(request.getVpcMapping().getInstIp()).append("</InstIp>");
+            xmlBody.append("<InstPort>").append(request.getVpcMapping().getInstPort()).append("</InstPort>");
+            xmlBody.append("<RefName>").append(request.getBucketName()).append("</RefName>");
+            xmlBody.append("<RefType>").append("bucket").append("</RefType>");
+            xmlBody.append("</VpcMappingParams>");
 
             byte[] rawData = null;
             try {

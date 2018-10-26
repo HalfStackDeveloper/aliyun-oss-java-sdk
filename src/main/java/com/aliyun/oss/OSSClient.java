@@ -1349,6 +1349,16 @@ public class OSSClient implements OSS {
     }
 
     @Override
+    public void putVpcMapping(VpcMappingRequest request) throws OSSException, ClientException {
+        this.bucketOperation.putVpcMapping(request);
+    }
+
+    @Override
+    public void deleteVpcMapping(VpcMappingRequest request) throws OSSException, ClientException {
+        this.bucketOperation.deleteVpcMapping(request);
+    }
+
+    @Override
     public void createUdf(CreateUdfRequest createUdfRequest) throws OSSException, ClientException {
         this.udfOperation.createUdf(createUdfRequest);
     }

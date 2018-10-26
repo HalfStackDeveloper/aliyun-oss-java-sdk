@@ -2328,6 +2328,19 @@ public interface OSS {
      */
     public GenericResult processObject(ProcessObjectRequest processObjectRequest) throws OSSException, ClientException;
 
+    /**
+     * Set VpcMapping for Mirro to Origin
+     * @throws OSSException
+     * @throws ClientException
+     */
+    public void putVpcMapping(VpcMappingRequest request) throws OSSException, ClientException;
+
+    /**
+     * Delete VpcMapping for Mirro to Origin
+     * @throws OSSException
+     * @throws ClientException
+     */
+    public void deleteVpcMapping(VpcMappingRequest request) throws OSSException, ClientException;
 
     /**
      * Creates UDF
