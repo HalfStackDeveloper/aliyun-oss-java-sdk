@@ -1243,12 +1243,37 @@ public class OSSBucketOperation extends OSSOperation {
         addRequestRequiredHeaders(headers, rawContent);
 
         RequestMessage request = new OSSRequestMessageBuilder(getInnerClient()).setEndpoint(getEndpoint())
-            .setMethod(HttpMethod.PUT).setBucket(bucketName).setParameters(params).setHeaders(headers)
-            .setInputSize(rawContent.length).setInputStream(new ByteArrayInputStream(rawContent))
-            .setOriginalRequest(putVpcMappingRequest).build();
+                .setMethod(HttpMethod.PUT).setBucket(bucketName).setParameters(params).setHeaders(headers)
+                .setInputSize(rawContent.length).setInputStream(new ByteArrayInputStream(rawContent))
+                .setOriginalRequest(putVpcMappingRequest).build();
 
         doOperation(request, emptyResponseParser, bucketName, null, true);
     }
+
+
+    /**
+     * Get bucket event notification
+     */
+    public NotificationConfiguration getBucketEventNotification(GenericRequest genericRequest)
+        throws OSSException, ClientException {
+        assertParameterNotNull(genericRequest, "genericRequest");
+
+        String bucketName = genericRequest.getBucketName();
+
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(SUBRESOURCE_NOTIFICATION, null);
+
+        RequestMessage request = new OSSRequestMessageBuilder(getInnerClient())
+                .setEndpoint(getEndpoint())
+                .setMethod(HttpMethod.GET)
+                .setBucket(bucketName)
+                .setParameters(params)
+                .setOriginalRequest(genericRequest)
+                .build();
+
+        return doOperation(request, getBucketNotificationResponseParser, bucketName, null, true);
+    }
+
 
     public void deleteVpcMapping(VpcMappingRequest deleteVpcMappingRequest) throws OSSException, ClientException {
         assertParameterNotNull(deleteVpcMappingRequest, "deleteVpcMappingRequest");
@@ -1266,11 +1291,10 @@ public class OSSBucketOperation extends OSSOperation {
         addRequestRequiredHeaders(headers, rawContent);
 
         RequestMessage request = new OSSRequestMessageBuilder(getInnerClient()).setEndpoint(getEndpoint())
-            .setMethod(HttpMethod.DELETE).setBucket(bucketName).setParameters(params).setHeaders(headers)
-            .setInputSize(rawContent.length).setInputStream(new ByteArrayInputStream(rawContent))
-            .setOriginalRequest(deleteVpcMappingRequest).build();
+                .setMethod(HttpMethod.DELETE).setBucket(bucketName).setParameters(params).setHeaders(headers)
+                .setInputSize(rawContent.length).setInputStream(new ByteArrayInputStream(rawContent))
+                .setOriginalRequest(deleteVpcMappingRequest).build();
 
         doOperation(request, emptyResponseParser, bucketName, null, true);
     }
-
 }

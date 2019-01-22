@@ -21,12 +21,14 @@ package com.aliyun.oss;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import com.aliyun.oss.common.auth.Credentials;
+import com.aliyun.oss.common.auth.CredentialsProvider;
 import com.aliyun.oss.common.comm.ResponseMessage;
 import com.aliyun.oss.model.*;
 import com.aliyun.oss.model.SetBucketCORSRequest.CORSRule;
@@ -57,6 +59,14 @@ public interface OSS {
      * not usable after its shutdown() is called.
      */
     public void shutdown();
+
+    CredentialsProvider getCredentialsProvider();
+
+    ClientConfiguration getClientConfiguration();
+
+    void setEndpoint(String endpoint);
+
+    URI getEndpoint();
 
     /**
      * Creates {@link Bucket} instance. The bucket name specified must be
@@ -1896,7 +1906,6 @@ public interface OSS {
      */
     public void extendBucketWorm(ExtendWormConfigurationRequest request) throws OSSException, ClientException;
 
-
     /**
      * Get the worm cofiguration of the bucket.
      * @param request
@@ -1905,6 +1914,15 @@ public interface OSS {
      */
     public WormConfiguration getBucketWorm(GenericRequest request) throws OSSException, ClientException;
 
+    /**
+     * Gets the {@link Bucket}'s event notification
+     * @param   {@link GenericRequest} instance which specifies the bucket name.
+     * @return  {@link NotificationConfiguration} instance
+     * @throws OSSException OSS Service side exception
+     * @throws ClientException OSS Client side exception
+     */
+    public NotificationConfiguration getBucketEventNotification(GenericRequest genericRequest)
+        throws OSSException,ClientException;
 
     /**
      * File upload
@@ -2384,5 +2402,34 @@ public interface OSS {
 
     public UdfApplicationLog getUdfApplicationLog(GetUdfApplicationLogRequest getUdfApplicationLogRequest)
             throws OSSException, ClientException;
+
+    /**
+     * Set Bucket Encryption
+     * @param setBucketEncryptionRequest
+     *                  A {@link SetBucketEncryptionRequest}
+     * @throws OSSException
+     * @throws ClientException
+     */
+    void setBucketEncryption(SetBucketEncryptionRequest setBucketEncryptionRequest) throws OSSException, ClientException;
+
+    /**
+     * Delete Bucket Encryption
+     * @param genericRequest
+     *                  A {@link GenericRequest}
+     * @throws OSSException
+     * @throws ClientException
+     */
+    void deleteBucketEncryption(GenericRequest genericRequest) throws OSSException, ClientException;
+
+    /**
+     * Get Bucket Encryption
+     * @param genericRequest
+     *                  A {@link GenericRequest}
+     *
+     * @return A {@link ServerSideEncryptionRule}
+     * @throws OSSException
+     * @throws ClientException
+     */
+    ServerSideEncryptionRule getBucketEncryption(GenericRequest genericRequest) throws OSSException, ClientException;
 
 }

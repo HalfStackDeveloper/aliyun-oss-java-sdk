@@ -32,6 +32,7 @@ public final class RequestParameters {
     public static final String SUBRESOURCE_CORS = "cors";
     public static final String SUBRESOURCE_APPEND = "append";
     public static final String SUBRESOURCE_TAGGING = "tagging";
+    public static final String SUBRESOURCE_NOTIFICATION = "eventNotification";
     public static final String SUBRESOURCE_IMG = "img";
     public static final String SUBRESOURCE_STYLE = "style";
     public static final String SUBRESOURCE_REPLICATION = "replication";
@@ -62,6 +63,7 @@ public final class RequestParameters {
     public static final String SUBRESOURCE_USER_REGION = "userRegion";
     public static final String SUBRESOURCE_REGION_LIST = "regionList";
     public static final String SUBRESOURCE_VPC_MAPPING = "vpcMapping";
+    public static final String SUBRESOURCE_ENCRYPTION = "encryption";
 
     public static final String SUBRESOURCE_UDF = "udf";
     public static final String SUBRESOURCE_UDF_NAME = "udfName";

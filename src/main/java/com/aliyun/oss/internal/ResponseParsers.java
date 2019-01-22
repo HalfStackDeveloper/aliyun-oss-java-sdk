@@ -47,6 +47,8 @@ import com.aliyun.oss.model.LiveChannelStat.VideoStat;
 import com.aliyun.oss.model.LifecycleRule.RuleStatus;
 import com.aliyun.oss.model.LifecycleRule.StorageTransition;
 import com.aliyun.oss.model.SetBucketCORSRequest.CORSRule;
+import com.aliyun.oss.model.NotificationConfiguration;
+import com.aliyun.oss.model.FunctionComputeConfiguration;
 
 /*
  * A collection of parsers that parse HTTP reponses into corresponding human-readable results.
@@ -76,8 +78,10 @@ public final class ResponseParsers {
     public static final GetBucketStatResponseParser getBucketStatResponseParser = new GetBucketStatResponseParser();
     public static final GetBucketQosResponseParser getBucketQosResponseParser = new GetBucketQosResponseParser();
     public static final GetBucketRequestPaymentResponseParser getBucketRequestPaymentResponseParser = new GetBucketRequestPaymentResponseParser();
+    public static final GetBucketEncryptionResponseParser getBucketEncryptionResponseParser = new GetBucketEncryptionResponseParser();
     public static final InitiateWormConfigurationResponseParser initiateWormConfigurationResponseParser = new InitiateWormConfigurationResponseParser();
     public static final GetWormConfigurationResponseParser getWormConfigurationResponseParser = new GetWormConfigurationResponseParser();
+    public static final GetBucketNotificationResponseParser getBucketNotificationResponseParser = new GetBucketNotificationResponseParser();
 
     public static final ListObjectsReponseParser listObjectsReponseParser = new ListObjectsReponseParser();
     public static final PutObjectReponseParser putObjectReponseParser = new PutObjectReponseParser();
@@ -357,6 +361,21 @@ public final class ResponseParsers {
 
     }
 
+    public static final class GetBucketEncryptionResponseParser implements ResponseParser<ServerSideEncryptionRule> {
+
+        @Override
+        public ServerSideEncryptionRule parse(ResponseMessage response) throws ResponseParseException {
+            try {
+                ServerSideEncryptionRule result = parseGetBucketEncryption(response.getContent());
+                result.setRequestId(response.getRequestId());
+                return result;
+            } finally {
+                safeCloseResponse(response);
+            }
+        }
+
+    }
+
     public static final class CreateLiveChannelResponseParser implements ResponseParser<CreateLiveChannelResult> {
 
         @Override
@@ -496,6 +515,19 @@ public final class ResponseParsers {
             }
         }
 
+    }
+
+    public static final class GetBucketNotificationResponseParser implements ResponseParser<NotificationConfiguration> {
+
+        @Override
+        public NotificationConfiguration parse(ResponseMessage response)
+            throws ResponseParseException {
+            try {
+                return parseNotificationConfiguration(response.getContent());
+            } finally {
+                safeCloseResponse(response);
+            }
+        }
     }
 
     public static final class ListObjectsReponseParser implements ResponseParser<ObjectListing> {
@@ -2298,6 +2330,18 @@ public final class ResponseParsers {
             }
             bucketInfo.setBucket(bucket);
 
+            // encryptionRule
+            Element encryptionElement = bucketElem.getChild("ServerSideEncryptionRule");
+            if (encryptionElement != null) {
+                String algorithm = encryptionElement.getChildText("SSEAlgorithm");
+                ServerSideEncryptionRule rule = new ServerSideEncryptionRule();
+                rule.setAlgorithm(SSEAlgorithm.parse(algorithm));
+                if (rule.getAlgorithm() == SSEAlgorithm.KMS) {
+                    rule.setkMSMasterKeyID(encryptionElement.getChildText("KMSMasterKeyID"));
+                }
+                bucketInfo.setEncryptionRule(rule);
+            }
+
             // acl
             String aclString = bucketElem.getChild("AccessControlList").getChildText("Grant");
             CannedAccessControlList acl = CannedAccessControlList.parse(aclString);
@@ -2332,6 +2376,30 @@ public final class ResponseParsers {
             Long multipartUploadCount = Long.parseLong(root.getChildText("MultipartUploadCount"));
             BucketStat bucketStat = new BucketStat(storage, objectCount, multipartUploadCount);
             return bucketStat;
+        } catch (JDOMParseException e) {
+            throw new ResponseParseException(e.getPartialDocument() + ": " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ResponseParseException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Unmarshall get bucket info response body to bucket stat.
+     */
+    public static ServerSideEncryptionRule parseGetBucketEncryption(InputStream responseBody) throws ResponseParseException {
+        try {
+            Element root = getXmlRootElement(responseBody);
+
+            String algorithm = root.getChild("ApplyServerSideEncryptionByDefault").getChildText("SSEAlgorithm");
+
+            ServerSideEncryptionRule encryptionRule = new ServerSideEncryptionRule();
+            encryptionRule.setAlgorithm(SSEAlgorithm.parse(algorithm));
+            if (encryptionRule.getAlgorithm() == SSEAlgorithm.KMS) {
+                String kMSMasterKeyID = root.getChild("ApplyServerSideEncryptionByDefault").getChildText("KMSMasterKeyID");
+                encryptionRule.setkMSMasterKeyID(kMSMasterKeyID);
+            }
+
+            return encryptionRule;
         } catch (JDOMParseException e) {
             throw new ResponseParseException(e.getPartialDocument() + ": " + e.getMessage(), e);
         } catch (Exception e) {
@@ -2739,4 +2807,42 @@ public final class ResponseParsers {
         }
     }
 
+    /**
+     * Unmashall get bucket notification response body to corresponding result
+     */
+    public static NotificationConfiguration parseNotificationConfiguration(InputStream responseBody) throws ResponseParseException {
+        try {
+            Element root = getXmlRootElement(responseBody);
+            List<FunctionComputeConfiguration> functionComputeConfigurations = new ArrayList<FunctionComputeConfiguration>();
+
+            List<Element> notificationElems = root.getChildren("FunctionComputeConfiguration");
+
+            for (Element notificationElem : notificationElems) {
+                String prefix = null;
+                String suffix = null;
+                String arn = null;
+                String assumeRole = null;
+
+                String id = notificationElem.getChildText("ID");
+                String event = notificationElem.getChildText("Event");
+
+                if (notificationElem.getChild("Filter") != null && notificationElem.getChild("Filter").getChild("Key") != null) {
+                    prefix = notificationElem.getChild("Filter").getChild("Key").getChildText("Prefix");
+                    suffix = notificationElem.getChild("Filter").getChild("Key").getChildText("Suffix");
+                }
+
+                if (notificationElem.getChild("Function") != null) {
+                    arn = notificationElem.getChild("Function").getChildText("Arn");
+                    assumeRole = notificationElem.getChild("Function").getChildText("AssumeRole");
+                }
+
+                functionComputeConfigurations.add(new FunctionComputeConfiguration(id, event, prefix, suffix, arn, assumeRole));
+            }
+            return new NotificationConfiguration(functionComputeConfigurations);
+        } catch (JDOMParseException e) {
+            throw new ResponseParseException(e.getPartialDocument() + ": " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ResponseParseException(e.getMessage(), e);
+        }
+    }
 }

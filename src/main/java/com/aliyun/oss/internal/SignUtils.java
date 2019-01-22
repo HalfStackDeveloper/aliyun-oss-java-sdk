@@ -53,8 +53,8 @@ public class SignUtils {
             SUBRESOURCE_PROCESS_CONF, SUBRESOURCE_SYMLINK, SUBRESOURCE_STAT, SUBRESOURCE_UDF, SUBRESOURCE_UDF_NAME,
             SUBRESOURCE_UDF_IMAGE, SUBRESOURCE_UDF_IMAGE_DESC, SUBRESOURCE_UDF_APPLICATION, SUBRESOURCE_UDF_LOG,
             SUBRESOURCE_RESTORE, SUBRESOURCE_REQUEST_PAYMENT,SUBRESOURCE_CSV_SELECT, SUBRESOURCE_CSV_META, SUBRESOURCE_SQL,
-            SUBRESOURCE_WORM, SUBRESOURCE_WORM_ID, SUBRESOURCE_WORM_EXTEND, SUBRESOURCE_USER_REGION, SUBRESOURCE_REGION_LIST,
-            SUBRESOURCE_VPC_MAPPING });
+            SUBRESOURCE_WORM, SUBRESOURCE_WORM_ID, SUBRESOURCE_WORM_EXTEND, SUBRESOURCE_USER_REGION, SUBRESOURCE_REGION_LIST, SUBRESOURCE_NOTIFICATION,
+            SUBRESOURCE_VPC_MAPPING});
 
 
     public static String buildCanonicalString(String method, String resourcePath, RequestMessage request,
@@ -77,7 +77,9 @@ public class SignUtils {
                         || lowerKey.equals(HttpHeaders.CONTENT_MD5.toLowerCase())
                         || lowerKey.equals(HttpHeaders.DATE.toLowerCase())
                         || lowerKey.startsWith(OSSHeaders.OSS_PREFIX)) {
-                    headersToSign.put(lowerKey, header.getValue().trim());
+                    if (header.getValue() != null) {
+                        headersToSign.put(lowerKey, header.getValue().trim());
+                    }
                 }
             }
         }
