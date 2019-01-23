@@ -290,7 +290,8 @@ public final class RequestMarshallers {
 
                     // Condition字句可以没有，如果有至少有一个条件
                     RoutingRule.Condition condition = routingRule.getCondition();
-                    if (condition.getKeyPrefixEquals() != null || condition.getHttpErrorCodeReturnedEquals() > 0) {
+                    if (condition != null && condition.getKeyPrefixEquals() != null
+                            || (condition.getHttpErrorCodeReturnedEquals() != null && condition.getHttpErrorCodeReturnedEquals() > 0)) {
                         xmlBody.append("<Condition>");
                         if (condition.getKeyPrefixEquals() != null) {
                             xmlBody.append("<KeyPrefixEquals>" + escapeKey(condition.getKeyPrefixEquals())
